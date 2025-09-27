@@ -1,7 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useAnnouncement, type AnnouncementConfig } from "./announcement-provider"
+import * as React from "react";
+import {
+  useAnnouncement,
+  type AnnouncementConfig,
+} from "./announcement-provider";
+import Image from "next/image";
+
+const simpleAnnouncementId = "simple-announcement-v1";
+const twoStepAnnouncementId = "two-step-announcement-v1";
 
 export function DemoAnnouncementPanel() {
   const {
@@ -9,24 +16,29 @@ export function DemoAnnouncementPanel() {
     updateAnnouncementConfig,
     getAnnouncementStats,
     resetAnnouncementTracking,
-    canShowAnnouncement,
-  } = useAnnouncement()
+  } = useAnnouncement();
 
-  const [lastStats, setLastStats] = React.useState<string>("")
+  const [lastStats, setLastStats] = React.useState<string>("");
 
-  // Simple route-agnostic announcement
-  const showDashboardWelcome = () => {
+  const showSimpleAnnouncement = () => {
     const config: AnnouncementConfig = {
-      id: "sample-announcement-v1",
+      id: simpleAnnouncementId,
       content: (
         <div className="space-y-2">
-          <p className="text-pretty">This is a sample announcement.</p>
-          <p className="text-pretty">You can customize the content, title, and behavior.</p>
+          <p className="text-pretty">
+            Welcome to your new dashboard! Here's what changed, new charts, and
+            more.
+          </p>
+          <Image
+            src="/dashboard-v2.png"
+            alt="Dashboard"
+            width={500}
+            height={500}
+          />
         </div>
       ),
       modalProps: {
-        title: "Announcement",
-        description: "A simple example using the Announcement system.",
+        title: "Feature Announcement",
         okText: "OK",
         cancelText: "Dismiss",
       },
@@ -34,82 +46,65 @@ export function DemoAnnouncementPanel() {
       showDelay: 0,
       onOk: () => true, // close on OK
       onDismiss: () => false, // not permanent unless you design it so
-    }
-    showAnnouncement(config)
-    setLastStats(JSON.stringify(getAnnouncementStats(config.id), null, 2))
-  }
+    };
+    showAnnouncement(config);
+    setLastStats(JSON.stringify(getAnnouncementStats(config.id), null, 2));
+  };
 
-  // Force show anywhere (ignores limits/target)
-  const forceShowAnywhere = () => {
-    const config: AnnouncementConfig = {
-      id: "force-override-v1",
-      content: <div>Admin override: This is visible anywhere for testing.</div>,
-      modalProps: {
-        title: "Force Show",
-        okText: "Close",
-        cancelText: "Dismiss",
-      },
-      onDismiss: () => false,
-      onOk: () => true,
-    }
-    showAnnouncement(config, true)
-    setLastStats(JSON.stringify(getAnnouncementStats(config.id), null, 2))
-  }
-
-  // Two-step announcement
-  const [step, setStep] = React.useState(1)
-  const startTwoStep = () => {
-    setStep(1)
-    const step1: AnnouncementConfig = {
-      id: "feature-two-step-v1",
+  const moveToStep2 = () => {
+    updateAnnouncementConfig({
+      id: twoStepAnnouncementId,
       content: (
-        <div>
-          <p className="mb-2 font-medium">Introducing Email Automation</p>
-          <p>Set up in minutes. Click Next to review changes.</p>
+        <div className="space-y-2">
+          <ul className="list-disc pl-5">
+            <li>No disruption to current analytics</li>
+            <li>Can be reverted to previous version</li>
+            <li>Existing reports will remain accessible</li>
+          </ul>
+        </div>
+      ),
+      modalProps: {
+        title: "Review and Accept",
+        okText: "Confirm Upgrade",
+        cancelText: "Cancel",
+      },
+      onOk: () => true, // close on final step
+    });
+  };
+
+  const showTwoStepAnnouncement = () => {
+    const step1Config: AnnouncementConfig = {
+      id: twoStepAnnouncementId,
+      content: (
+        <div className="space-y-2">
+          <p className="font-medium">Introducing Web Analytics</p>
+          <p>
+            All new analytics dashboard, built to track your website traffic.
+            Click Next to review changes.
+          </p>
+          <Image
+            src="/analytics-step1.png"
+            alt="Analytics Step 1"
+            width={500}
+            height={500}
+          />
         </div>
       ),
       modalProps: { title: "New Feature", okText: "Next" },
       onOk: () => {
-        setStep(2)
-        return false // do not close, move to next step
+        moveToStep2();
+        return false; // do not close, move to next step
       },
       onDismiss: () => false,
-    }
-    showAnnouncement(step1)
-  }
-
-  React.useEffect(() => {
-    if (step !== 2) return
-    updateAnnouncementConfig({
-      id: "feature-two-step-v1",
-      content: (
-        <div>
-          <p className="mb-2 font-medium">Review and Accept</p>
-          <ul className="list-disc pl-5">
-            <li>No disruption to current campaigns</li>
-            <li>Can be reverted anytime</li>
-          </ul>
-        </div>
-      ),
-      modalProps: { title: "Confirm Upgrade", okText: "Accept and Upgrade", cancelText: "Cancel" },
-      onOk: () => true, // close on final step
-      onDismiss: (afterOk) => afterOk === true, // permanently dismiss if accepted
-    })
-  }, [step, updateAnnouncementConfig])
-
-  const checkIfDashboardWouldShow = () => {
-    const cfg: AnnouncementConfig = {
-      id: "sample-announcement-v1",
-      content: <div />,
-    }
-    const can = canShowAnnouncement(cfg)
-    alert(`canShowAnnouncement() = ${String(can)}`)
-  }
+    };
+    showAnnouncement(step1Config);
+  };
 
   const resetDashboardAnnouncement = () => {
-    resetAnnouncementTracking("sample-announcement-v1")
-    setLastStats('Reset tracking for "sample-announcement-v1"')
-  }
+    resetAnnouncementTracking(simpleAnnouncementId);
+    resetAnnouncementTracking(twoStepAnnouncementId);
+    setLastStats("Announcements reset");
+  };
 
   return (
     <div className="rounded-lg border border-(--color-border) bg-(--color-card) p-4 text-(--color-card-foreground)">
@@ -118,12 +113,24 @@ export function DemoAnnouncementPanel() {
         Click the button below to show a sample announcement.
       </p>
 
-      <div className="mt-4 grid gap-2 md:grid-cols-2">
+      <div className="mt-4 grid gap-2 md:grid-cols-3">
         <button
-          onClick={showDashboardWelcome}
+          onClick={showSimpleAnnouncement}
           className="rounded-md bg-(--color-primary) px-3 py-2 text-sm font-medium text-(--color-primary-foreground) hover:opacity-90"
         >
           Show Announcement
+        </button>
+        <button
+          className="rounded-md bg-(--color-primary) px-3 py-2 text-sm font-medium text-(--color-primary-foreground) hover:opacity-90"
+          onClick={showTwoStepAnnouncement}
+        >
+          Show multi-step announcement
+        </button>
+        <button
+          className="rounded-md bg-(--color-primary) px-3 py-2 text-sm font-medium text-(--color-primary-foreground) hover:opacity-90"
+          onClick={resetDashboardAnnouncement}
+        >
+          Reset Announcement
         </button>
       </div>
 
@@ -131,5 +138,5 @@ export function DemoAnnouncementPanel() {
         {lastStats || "Stats will appear here after showing an announcement."}
       </pre>
     </div>
-  )
+  );
 }
