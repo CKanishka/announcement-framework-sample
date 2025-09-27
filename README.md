@@ -1,30 +1,235 @@
-# Announcement system sample
+# Announcement Framework Sample
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+A modern, flexible announcement system built with Next.js, React, and TypeScript. This project demonstrates how to create intelligent, context-aware announcements with tracking, targeting, and persistence capabilities.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kanishks-projects-38c73de1/v0-announcement-system-sample)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/VGw6wgaK9DG)
+## ✨ Features
 
-## Overview
+- **🎯 Smart Targeting**: Route-based and condition-based announcement targeting
+- **📊 View Tracking**: Automatic tracking of views, dismissals, and user interactions
+- **💾 Persistence**: LocalStorage-based persistence across browser sessions
+- **🎮 Interactive Controls**: Support for multi-step announcements and custom actions
+- **🎨 Beautiful UI**: Built with Radix UI and Tailwind CSS for a modern look
+- **🔧 Flexible Configuration**: Highly customizable announcement behavior
+- **⚡ Performance**: Lightweight with minimal overhead
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## 🚀 Getting Started
 
-## Deployment
+### Prerequisites
 
-Your project is live at:
+- Node.js 18+
+- npm, yarn, or pnpm
 
-**[https://vercel.com/kanishks-projects-38c73de1/v0-announcement-system-sample](https://vercel.com/kanishks-projects-38c73de1/v0-announcement-system-sample)**
+### Installation
 
-## Build your app
+1. Clone the repository:
 
-Continue building your app on:
+```bash
+git clone <repository-url>
+cd announcement-framework-sample
+```
 
-**[https://v0.app/chat/projects/VGw6wgaK9DG](https://v0.app/chat/projects/VGw6wgaK9DG)**
+2. Install dependencies:
 
-## How It Works
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+3. Run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📖 How It Works
+
+### Core Components
+
+- **AnnouncementService**: Singleton service managing announcement logic, tracking, and persistence
+- **AnnouncementProvider**: React context provider for announcement state management
+- **AnnouncementModal**: Reusable modal component for displaying announcements
+- **DemoPanel**: Interactive demo showcasing different announcement types
+
+### Basic Usage
+
+1. **Wrap your app with the AnnouncementProvider**:
+
+```tsx
+import { AnnouncementProvider } from "@/components/announcement/announcement-provider";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AnnouncementProvider>{children}</AnnouncementProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+2. **Use the hook to show announcements**:
+
+```tsx
+import { useAnnouncement } from "@/components/announcement/announcement-provider";
+
+function MyComponent() {
+  const { showAnnouncement } = useAnnouncement();
+
+  const showWelcome = () => {
+    showAnnouncement({
+      id: "welcome-v1",
+      content: <div>Welcome to our app!</div>,
+      modalProps: {
+        title: "Welcome",
+        okText: "Get Started",
+      },
+      maxViewCount: 1,
+      targetPath: "/dashboard",
+    });
+  };
+
+  return <button onClick={showWelcome}>Show Welcome</button>;
+}
+```
+
+### Advanced Features
+
+#### Route Targeting
+
+```tsx
+{
+  id: 'dashboard-feature',
+  targetPath: '/dashboard', // or regex: /^\/admin/
+  content: <FeatureAnnouncement />
+}
+```
+
+#### Conditional Display
+
+```tsx
+{
+  id: 'premium-upgrade',
+  condition: () => user.plan === 'free',
+  content: <UpgradePrompt />
+}
+```
+
+#### Multi-step Announcements
+
+```tsx
+// Step 1
+showAnnouncement({
+  id: "onboarding-step-1",
+  content: <Step1Content />,
+  onOk: () => {
+    // Move to step 2
+    updateAnnouncementConfig({
+      id: "onboarding-step-1",
+      content: <Step2Content />,
+    });
+    return false; // Don't close modal
+  },
+});
+```
+
+#### Custom Actions
+
+```tsx
+{
+  id: 'survey-prompt',
+  content: <SurveyInvite />,
+  onOk: async () => {
+    await trackSurveyResponse()
+    return true // Close modal
+  },
+  onDismiss: (afterOk) => afterOk // Permanently dismiss if completed
+}
+```
+
+## 🎛️ Configuration Options
+
+| Option         | Type                                        | Default     | Description                                |
+| -------------- | ------------------------------------------- | ----------- | ------------------------------------------ |
+| `id`           | `string`                                    | Required    | Unique identifier for the announcement     |
+| `content`      | `ReactNode`                                 | Required    | The announcement content                   |
+| `modalProps`   | `ModalProps`                                | `{}`        | Modal configuration (title, buttons, etc.) |
+| `maxViewCount` | `number`                                    | `3`         | Maximum times to show this announcement    |
+| `showDelay`    | `number`                                    | `0`         | Delay in milliseconds before showing       |
+| `targetPath`   | `string \| RegExp`                          | `undefined` | Route targeting                            |
+| `condition`    | `() => boolean`                             | `undefined` | Custom display condition                   |
+| `onShow`       | `() => void`                                | `undefined` | Callback when announcement is shown        |
+| `onOk`         | `() => Promise<boolean> \| boolean \| void` | `undefined` | OK button handler                          |
+| `onDismiss`    | `(afterOk?: boolean) => boolean \| void`    | `undefined` | Dismiss handler                            |
+
+## 🎨 Customization
+
+The announcement system is built with Tailwind CSS and uses CSS custom properties for theming. You can customize the appearance by:
+
+1. **Modifying the modal styles** in `announcement-modal.tsx`
+2. **Updating the theme** in your Tailwind configuration
+3. **Using custom CSS properties** for dynamic theming
+
+## 🧪 Demo Features
+
+Visit the demo pages to see the announcement system in action:
+
+- **Home Page** (`/`): Basic announcement demo with interactive controls
+- **Dashboard** (`/dashboard`): Route-targeted announcements
+- **Reports** (`/reports`): Additional examples and use cases
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+├── app/                    # Next.js app router pages
+├── components/
+│   ├── announcement/       # Announcement system components
+│   │   ├── announcement-service.ts     # Core service logic
+│   │   ├── announcement-provider.tsx   # React context provider
+│   │   ├── announcement-modal.tsx      # Modal component
+│   │   └── demo-panel.tsx             # Demo interface
+│   └── ...
+├── lib/                   # Utility functions
+└── styles/               # Global styles
+```
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🙏 Acknowledgments
+
+- This project was bootstrapped using [v0.dev](https://v0.dev)
+- Built with [Next.js](https://nextjs.org/)
+- UI components from [Radix UI](https://radix-ui.com/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+**Note**: This is a demonstration project showcasing announcement system patterns. Feel free to adapt and extend it for your specific use case.
