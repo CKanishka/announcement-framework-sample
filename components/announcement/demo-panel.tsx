@@ -7,11 +7,12 @@ import {
 } from "./announcement-provider";
 import Image from "next/image";
 
-const simpleAnnouncementId = "simple-announcement-v1";
-const twoStepAnnouncementId = "two-step-announcement-v1";
+const SIMPLE_ANNOUNCMENT_ID = "simple-announcement-v1";
+const TWO_STEP_ANNOUNCEMENT_ID = "two-step-announcement-v1";
 
 export function DemoAnnouncementPanel() {
   const {
+    activeAnnouncement,
     showAnnouncement,
     updateAnnouncementConfig,
     getAnnouncementStats,
@@ -22,7 +23,7 @@ export function DemoAnnouncementPanel() {
 
   const showSimpleAnnouncement = () => {
     const config: AnnouncementConfig = {
-      id: simpleAnnouncementId,
+      id: SIMPLE_ANNOUNCMENT_ID,
       content: (
         <div className="space-y-2">
           <p className="text-pretty">
@@ -48,17 +49,27 @@ export function DemoAnnouncementPanel() {
       onDismiss: () => false, // not permanent unless you design it so
     };
     showAnnouncement(config);
-    setLastStats(JSON.stringify(getAnnouncementStats(config.id), null, 2));
   };
 
   const moveToStep2 = () => {
     updateAnnouncementConfig({
-      id: twoStepAnnouncementId,
+      id: TWO_STEP_ANNOUNCEMENT_ID,
       content: (
-        <div className="space-y-2">
+        <div className="space-y-2 h-[472px]">
           <ul className="list-disc pl-5">
+            <li>
+              You can track new metrics like bounce rate, time on page, and more
+            </li>
             <li>No disruption to current analytics</li>
-            <li>Can be reverted to previous version</li>
+            <li>
+              Can be reverted to previous version in account settings
+              <Image
+                src="/analytics-step2.png"
+                alt="Analytics Step 2"
+                width={300}
+                height={300}
+              />
+            </li>
             <li>Existing reports will remain accessible</li>
           </ul>
         </div>
@@ -74,7 +85,7 @@ export function DemoAnnouncementPanel() {
 
   const showTwoStepAnnouncement = () => {
     const step1Config: AnnouncementConfig = {
-      id: twoStepAnnouncementId,
+      id: TWO_STEP_ANNOUNCEMENT_ID,
       content: (
         <div className="space-y-2">
           <p className="font-medium">Introducing Web Analytics</p>
@@ -101,10 +112,25 @@ export function DemoAnnouncementPanel() {
   };
 
   const resetDashboardAnnouncement = () => {
-    resetAnnouncementTracking(simpleAnnouncementId);
-    resetAnnouncementTracking(twoStepAnnouncementId);
+    resetAnnouncementTracking(SIMPLE_ANNOUNCMENT_ID);
+    resetAnnouncementTracking(TWO_STEP_ANNOUNCEMENT_ID);
     setLastStats("Announcements reset");
   };
+
+  React.useEffect(() => {
+    setLastStats(
+      JSON.stringify(
+        {
+          "Simple Announcement": getAnnouncementStats(SIMPLE_ANNOUNCMENT_ID),
+          "Two Step Announcement": getAnnouncementStats(
+            TWO_STEP_ANNOUNCEMENT_ID
+          ),
+        },
+        null,
+        2
+      )
+    );
+  }, [activeAnnouncement]);
 
   return (
     <div className="rounded-lg border border-(--color-border) bg-(--color-card) p-4 text-(--color-card-foreground)">
@@ -134,7 +160,7 @@ export function DemoAnnouncementPanel() {
         </button>
       </div>
 
-      <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-(--color-muted) p-3 text-xs text-(--color-muted-foreground)">
+      <pre className="mt-4 max-h-60 overflow-auto rounded-md bg-(--color-muted) p-3 text-xs text-(--color-muted-foreground)">
         {lastStats || "Stats will appear here after showing an announcement."}
       </pre>
     </div>
