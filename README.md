@@ -171,22 +171,6 @@ showAnnouncement({
 | `onOk`         | `() => Promise<boolean> \| boolean \| void` | `undefined` | OK button handler                          |
 | `onDismiss`    | `(afterOk?: boolean) => boolean \| void`    | `undefined` | Dismiss handler                            |
 
-## 🎨 Customization
-
-The announcement system is built with Tailwind CSS and uses CSS custom properties for theming. You can customize the appearance by:
-
-1. **Modifying the modal styles** in `announcement-modal.tsx`
-2. **Updating the theme** in your Tailwind configuration
-3. **Using custom CSS properties** for dynamic theming
-
-## 🧪 Demo Features
-
-Visit the demo pages to see the announcement system in action:
-
-- **Home Page** (`/`): Basic announcement demo with interactive controls
-- **Dashboard** (`/dashboard`): Route-targeted announcements
-- **Reports** (`/reports`): Additional examples and use cases
-
 ## 🛠️ Development
 
 ### Project Structure
